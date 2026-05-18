@@ -1,0 +1,804 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>华晨宝马历史经营数据查询底稿</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --ink: #142033;
+      --muted: #657188;
+      --line: #d9e1ee;
+      --blue: #185abc;
+      --blue-soft: #e9f1ff;
+      --green: #16794c;
+      --green-soft: #e7f6ee;
+      --amber: #9a5b00;
+      --amber-soft: #fff4dc;
+      --red: #b3261e;
+      --red-soft: #fdecea;
+      --shadow: 0 14px 38px rgba(20, 32, 51, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.55;
+    }
+
+    a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .page {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 32px 22px 56px;
+    }
+
+    header {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      width: fit-content;
+      padding: 4px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--blue);
+      background: var(--blue-soft);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      max-width: 920px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 24px 0;
+      align-items: center;
+    }
+
+    .control {
+      display: grid;
+      gap: 6px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 12px;
+      color: var(--ink);
+      background: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(24, 90, 188, 0.12);
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .cards {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .card,
+    .section {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .card {
+      padding: 16px;
+    }
+
+    .card .label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .card .value {
+      margin-top: 8px;
+      font-size: 28px;
+      line-height: 1.1;
+      font-weight: 800;
+    }
+
+    .card .note {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .section {
+      margin-top: 18px;
+      overflow: hidden;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      padding: 18px 20px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0;
+    }
+
+    .section p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 980px;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: right;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    th:first-child,
+    td:first-child,
+    .left {
+      text-align: left;
+    }
+
+    th {
+      color: var(--muted);
+      background: #f9fbff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    tbody tr:hover {
+      background: #f7faff;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 58px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-weight: 800;
+    }
+
+    .good {
+      color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .bad {
+      color: var(--red);
+      background: var(--red-soft);
+    }
+
+    .warn {
+      color: var(--amber);
+      background: var(--amber-soft);
+    }
+
+    .neutral {
+      color: var(--blue);
+      background: var(--blue-soft);
+    }
+
+    .bar-cell {
+      min-width: 170px;
+    }
+
+    .bar {
+      position: relative;
+      height: 9px;
+      border-radius: 999px;
+      background: #e8eef7;
+      overflow: hidden;
+    }
+
+    .bar span {
+      position: absolute;
+      inset: 0 auto 0 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #1f6feb, #2aa876);
+    }
+
+    .mini-chart {
+      display: grid;
+      gap: 12px;
+      padding: 18px 20px 20px;
+    }
+
+    .chart-row {
+      display: grid;
+      grid-template-columns: 54px 1fr 84px 84px;
+      gap: 12px;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .chart-label {
+      font-weight: 800;
+    }
+
+    .chart-track {
+      height: 14px;
+      border-radius: 999px;
+      background: #e8eef7;
+      overflow: hidden;
+    }
+
+    .chart-track span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: #185abc;
+    }
+
+    .chart-track span.alt {
+      background: #2aa876;
+    }
+
+    .source-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      padding: 16px 20px 20px;
+    }
+
+    .source {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fff;
+    }
+
+    .source .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .source .text {
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .source .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .notes {
+      display: grid;
+      gap: 8px;
+      padding: 16px 20px 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .empty {
+      display: none;
+      padding: 18px 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .cards,
+      .source-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .page {
+        padding: 22px 14px 42px;
+      }
+
+      .section-head {
+        display: block;
+      }
+
+      .chart-row {
+        grid-template-columns: 46px 1fr 72px;
+      }
+
+      .chart-row .hide-sm {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">本地年报缓存 · 2020-2025</div>
+      <h1>华晨宝马历史经营数据查询底稿</h1>
+      <p class="subtitle">
+        用本地年报缓存整理华晨宝马销量、电动化、车型结构、利润贡献和现金回流。
+      </p>
+    </header>
+
+    <section class="grid cards" aria-label="关键结论">
+      <article class="card">
+        <div class="label">2025 国内销量</div>
+        <div class="value">53.4 万辆</div>
+        <div class="note">同比 -11.6%，连续两年回落。</div>
+      </article>
+      <article class="card">
+        <div class="label">2025 BEV 销量</div>
+        <div class="value">4.78 万辆</div>
+        <div class="note">同比 -48.0%，电动车结构承压。</div>
+      </article>
+      <article class="card">
+        <div class="label">2025 应占华晨宝马利润</div>
+        <div class="value">25.97 亿元</div>
+        <div class="note">年报披露口径：本集团应占华晨宝马溢利。</div>
+      </article>
+      <article class="card">
+        <div class="label">2025 已收华晨宝马股息</div>
+        <div class="value">42.88 亿元</div>
+        <div class="note">现金回流通常对应前期利润/可分配利润，不能简单等同当年派息率。</div>
+      </article>
+    </section>
+
+    <section class="section" data-topic="sales profit cash">
+      <div class="section-head">
+        <div>
+          <h2>年度总览</h2>
+          <p>金额单位为人民币亿元，销售额为华晨宝马分部销售折算；“利润贡献”按华晨中国在年报中确认的华晨宝马贡献口径整理。</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="overviewTable">
+          <thead>
+            <tr>
+              <th>年份</th>
+              <th>持股/口径</th>
+              <th>国内销量</th>
+              <th>同比</th>
+              <th>BEV 销量</th>
+              <th>BEV 占比</th>
+              <th>出口销量</th>
+              <th>分部销售</th>
+              <th>利润贡献</th>
+              <th>利润贡献同比</th>
+              <th>已收华晨宝马股息</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-year="2025" data-search="2025 国内销量 534001 BEV 47762 出口 2162 华晨宝马 利润 25.97 股息 42.88">
+              <td class="left"><strong>2025</strong></td>
+              <td class="left">25% 联营公司</td>
+              <td>534,001</td>
+              <td><span class="pill bad">-11.6%</span></td>
+              <td>47,762</td>
+              <td>8.9%</td>
+              <td>2,162</td>
+              <td>1,655.56</td>
+              <td>25.97</td>
+              <td><span class="pill bad">-40.5%</span></td>
+              <td>42.88</td>
+            </tr>
+            <tr data-year="2024" data-search="2024 国内销量 603807 BEV 95083 出口 21284 华晨宝马 利润 43.63 股息 76.54">
+              <td class="left"><strong>2024</strong></td>
+              <td class="left">25% 联营公司</td>
+              <td>603,807</td>
+              <td><span class="pill bad">-15.0%</span></td>
+              <td>95,083</td>
+              <td>15.7%</td>
+              <td>21,284</td>
+              <td>2,050.65</td>
+              <td>43.63</td>
+              <td><span class="pill bad">-44.0%</span></td>
+              <td>76.54</td>
+            </tr>
+            <tr data-year="2023" data-search="2023 国内销量 709954 BEV 95550 出口 33931 华晨宝马 利润 77.94 股息 113.78">
+              <td class="left"><strong>2023</strong></td>
+              <td class="left">25% 联营公司</td>
+              <td>709,954</td>
+              <td><span class="pill good">+6.8%</span></td>
+              <td>95,550</td>
+              <td>13.5%</td>
+              <td>33,931</td>
+              <td>2,534.85</td>
+              <td>77.94</td>
+              <td><span class="pill bad">-12.7%</span></td>
+              <td>113.78</td>
+            </tr>
+            <tr data-year="2022" data-search="2022 国内销量 664934 BEV 45364 出口 30005 华晨宝马 利润 89.24 股息 106.58">
+              <td class="left"><strong>2022</strong></td>
+              <td class="left">2 月前 50%，之后 25%</td>
+              <td>664,934</td>
+              <td><span class="pill good">+2.0%</span></td>
+              <td>45,364</td>
+              <td>6.8%</td>
+              <td>30,005</td>
+              <td>2,355.89</td>
+              <td>89.24</td>
+              <td><span class="pill bad">-38.5%</span></td>
+              <td>106.58</td>
+            </tr>
+            <tr data-year="2021" data-search="2021 国内销量 652000 BEV 22452 出口 21888 华晨宝马 利润 145.15">
+              <td class="left"><strong>2021</strong></td>
+              <td class="left">50% 合资企业</td>
+              <td>652,000</td>
+              <td><span class="pill good">+7.8%</span></td>
+              <td>22,452</td>
+              <td>3.4%</td>
+              <td>21,888</td>
+              <td>2,136.29</td>
+              <td>145.15</td>
+              <td><span class="pill good">+43.8%</span></td>
+              <td>未披露/无</td>
+            </tr>
+            <tr data-year="2020" data-search="2020 国内销量 605050 BEV 未披露 华晨宝马 利润 100.92 股息 30">
+              <td class="left"><strong>2020</strong></td>
+              <td class="left">50% 合资企业</td>
+              <td>605,050</td>
+              <td><span class="pill good">+10.8%</span></td>
+              <td>未披露</td>
+              <td>未披露</td>
+              <td>未披露</td>
+              <td>1,882.71</td>
+              <td>100.92</td>
+              <td>-</td>
+              <td>30.00</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" data-topic="sales">
+      <div class="section-head">
+        <div>
+          <h2>销量趋势</h2>
+          <p>用年度销量观察华晨宝马基本盘，月度跟踪时可把每月数据追加到同一口径。</p>
+        </div>
+      </div>
+      <div class="mini-chart" id="salesChart" aria-label="销量趋势图"></div>
+    </section>
+
+    <section class="section" data-topic="model">
+      <div class="section-head">
+        <div>
+          <h2>车型结构</h2>
+          <p>看利润质量时，3 系、5 系、X3、X5 是核心；1 系和 X2 已基本边缘化，2025 年新增 2 系。</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="modelTable">
+          <thead>
+            <tr>
+              <th>年份</th>
+              <th>1 系</th>
+              <th>2 系</th>
+              <th>3 系</th>
+              <th>5 系</th>
+              <th>X1</th>
+              <th>X2</th>
+              <th>X3</th>
+              <th>X5</th>
+              <th>合计</th>
+              <th class="left">结构观察</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-year="2025" data-search="2025 车型 1系 2系 3系 5系 X1 X2 X3 X5">
+              <td class="left"><strong>2025</strong></td>
+              <td>2</td>
+              <td>8,842</td>
+              <td>180,457</td>
+              <td>126,444</td>
+              <td>63,004</td>
+              <td>2</td>
+              <td>82,850</td>
+              <td>72,400</td>
+              <td>534,001</td>
+              <td class="left">5 系恢复，但 X3/X1/X5 下滑明显。</td>
+            </tr>
+            <tr data-year="2024" data-search="2024 车型 1系 3系 5系 X1 X2 X3 X5">
+              <td class="left"><strong>2024</strong></td>
+              <td>86</td>
+              <td>-</td>
+              <td>192,412</td>
+              <td>94,841</td>
+              <td>92,068</td>
+              <td>307</td>
+              <td>136,461</td>
+              <td>87,632</td>
+              <td>603,807</td>
+              <td class="left">3 系仍强，5 系换代压力突出。</td>
+            </tr>
+            <tr data-year="2023" data-search="2023 车型 1系 3系 5系 X1 X2 X3 X5">
+              <td class="left"><strong>2023</strong></td>
+              <td>14,638</td>
+              <td>-</td>
+              <td>203,688</td>
+              <td>142,322</td>
+              <td>83,010</td>
+              <td>17,230</td>
+              <td>155,343</td>
+              <td>93,723</td>
+              <td>709,954</td>
+              <td class="left">近年高点，3 系与 X5 增长最显著。</td>
+            </tr>
+            <tr data-year="2022" data-search="2022 车型 1系 3系 5系 X1 X2 X3 X5">
+              <td class="left"><strong>2022</strong></td>
+              <td>24,195</td>
+              <td>-</td>
+              <td>161,721</td>
+              <td>173,977</td>
+              <td>81,895</td>
+              <td>18,506</td>
+              <td>146,407</td>
+              <td>58,233</td>
+              <td>664,934</td>
+              <td class="left">X5 纳入国产后抬升结构。</td>
+            </tr>
+            <tr data-year="2021" data-search="2021 车型 1系 3系 5系 X1 X2 X3">
+              <td class="left"><strong>2021</strong></td>
+              <td>36,350</td>
+              <td>-</td>
+              <td>173,000</td>
+              <td>172,854</td>
+              <td>95,089</td>
+              <td>23,300</td>
+              <td>151,407</td>
+              <td>-</td>
+              <td>652,000</td>
+              <td class="left">3 系、5 系、X3 三大主力均衡。</td>
+            </tr>
+            <tr data-year="2020" data-search="2020 车型 1系 2系 3系 5系 X1 X2 X3">
+              <td class="left"><strong>2020</strong></td>
+              <td>38,695</td>
+              <td>15</td>
+              <td>154,350</td>
+              <td>158,957</td>
+              <td>93,176</td>
+              <td>25,672</td>
+              <td>134,185</td>
+              <td>-</td>
+              <td>605,050</td>
+              <td class="left">疫情年份 3 系/X3 拉动增长。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" data-topic="cash profit">
+      <div class="section-head">
+        <div>
+          <h2>利润与现金回流</h2>
+          <p>这一组数据用来判断“华晨宝马利润能否变成华晨中国的现金，再变成股东分红”。</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="cashTable">
+          <thead>
+            <tr>
+              <th>年份</th>
+              <th>华晨中国归母利润</th>
+              <th>应占华晨宝马利润</th>
+              <th>已收华晨宝马股息</th>
+              <th>对股东派息</th>
+              <th>期末股东权益</th>
+              <th class="left">读数</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-year="2025" data-search="2025 归母利润 19.86 华晨宝马利润 25.97 华晨宝马股息 42.88 对股东派息 84.23">
+              <td class="left"><strong>2025</strong></td>
+              <td>19.86</td>
+              <td>25.97</td>
+              <td>42.88</td>
+              <td>84.23</td>
+              <td>210.27</td>
+              <td class="left">股东派息继续高于当年归母利润，属于前期现金继续释放。</td>
+            </tr>
+            <tr data-year="2024" data-search="2024 归母利润 31.01 华晨宝马利润 43.63 华晨宝马股息 76.54 对股东派息 272.11">
+              <td class="left"><strong>2024</strong></td>
+              <td>31.01</td>
+              <td>43.63</td>
+              <td>76.54</td>
+              <td>272.11</td>
+              <td>260.61</td>
+              <td class="left">大额特别股息集中释放，不能线性外推。</td>
+            </tr>
+            <tr data-year="2023" data-search="2023 归母利润 77.35 华晨宝马利润 77.94 华晨宝马股息 113.78 对股东派息 87.50">
+              <td class="left"><strong>2023</strong></td>
+              <td>77.35</td>
+              <td>77.94</td>
+              <td>113.78</td>
+              <td>87.50</td>
+              <td>511.18</td>
+              <td class="left">华晨宝马现金回流强，对股东分配开始恢复。</td>
+            </tr>
+            <tr data-year="2022" data-search="2022 归母利润 71.47 华晨宝马利润 89.24 华晨宝马股息 106.58 对股东派息 0">
+              <td class="left"><strong>2022</strong></td>
+              <td>71.47</td>
+              <td>89.24</td>
+              <td>106.58</td>
+              <td>0.00</td>
+              <td>514.45</td>
+              <td class="left">股权出售完成后的过渡年，现金先留在公司层面。</td>
+            </tr>
+            <tr data-year="2021" data-search="2021 归母利润 119.61 华晨宝马利润 145.15 股息 0 股东权益 423.29">
+              <td class="left"><strong>2021</strong></td>
+              <td>119.61</td>
+              <td>145.15</td>
+              <td>未披露/无</td>
+              <td>未披露</td>
+              <td>423.29</td>
+              <td class="left">50:50 合资阶段，华晨宝马是利润核心。</td>
+            </tr>
+            <tr data-year="2020" data-search="2020 归母利润 0.11 华晨宝马利润 100.92 股息 30 股东权益 332.86">
+              <td class="left"><strong>2020</strong></td>
+              <td>0.11</td>
+              <td>100.92</td>
+              <td>30.00</td>
+              <td>未披露</td>
+              <td>332.86</td>
+              <td class="left">本部拖累严重，宝马利润被其他问题抵消。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>使用说明</h2>
+          <p>这页是投资研究底稿，不是财务建议。后续如果补月度销量，可以直接加在同一 HTML 或另做月度表。</p>
+        </div>
+      </div>
+      <div class="notes">
+        <div>1. 本页历史数据来自本地年报 PDF 与缓存文本：<code>anual/*.pdf</code>、<code>cache/annual_reports/text/*.txt</code>。</div>
+        <div>2. “已收华晨宝马股息”是华晨中国收到的现金股息，通常对应华晨宝马前期利润或累计可分配利润，不应机械除以同年应占利润。</div>
+        <div>3. 2022 年是股权变更过渡年，利润贡献口径同时涉及 50% 合资企业阶段和 25% 联营公司阶段。</div>
+        <div>4. 2020 年年报未单独披露 BEV/出口销量；2021 年出口销量来自 2022 年年报同比基数。</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const annualSales = [
+      { year: 2020, sales: 605050, bev: null },
+      { year: 2021, sales: 652000, bev: 22452 },
+      { year: 2022, sales: 664934, bev: 45364 },
+      { year: 2023, sales: 709954, bev: 95550 },
+      { year: 2024, sales: 603807, bev: 95083 },
+      { year: 2025, sales: 534001, bev: 47762 },
+    ];
+
+    function formatNumber(value) {
+      if (value === null || value === undefined) return "未披露";
+      return value.toLocaleString("zh-CN");
+    }
+
+    function drawSalesChart() {
+      const chart = document.getElementById("salesChart");
+      const maxSales = Math.max(...annualSales.map((item) => item.sales));
+      const maxBev = Math.max(...annualSales.map((item) => item.bev || 0));
+      const legend = `
+            <div class="chart-row" style="margin-bottom:4px;font-size:12px;color:var(--muted)">
+              <div></div>
+              <div style="display:flex;gap:16px">
+                <span style="display:inline-flex;align-items:center;gap:6px">
+                  <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#185abc"></span>国内销量
+                </span>
+                <span style="display:inline-flex;align-items:center;gap:6px">
+                  <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#2aa876"></span>BEV 销量
+                </span>
+              </div>
+              <div></div>
+              <div class="hide-sm"></div>
+            </div>
+          `;
+      chart.innerHTML = legend + annualSales
+        .map((item) => {
+          const salesWidth = Math.max(6, (item.sales / maxSales) * 100);
+          const bevWidth = item.bev ? Math.max(4, (item.bev / maxBev) * 100) : 0;
+          return `
+            <div class="chart-row" data-year="${item.year}" data-search="${item.year} 销量 BEV ${item.sales} ${item.bev || ""}">
+              <div class="chart-label">${item.year}</div>
+              <div>
+                <div class="chart-track" title="国内销量">
+                  <span style="width:${salesWidth}%"></span>
+                </div>
+                <div class="chart-track" title="BEV 销量" style="margin-top:6px">
+                  <span class="alt" style="width:${bevWidth}%"></span>
+                </div>
+              </div>
+              <div>${formatNumber(item.sales)}</div>
+              <div class="hide-sm">${formatNumber(item.bev)}</div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    drawSalesChart();
+  </script>
+</body>
+</html>
