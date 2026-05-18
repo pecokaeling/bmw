@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>华晨中国预期分红与股息率矩阵</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fb;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #d9dee8;
+      --blue: #2563eb;
+      --blue-soft: #e9f1ff;
+      --green: #13966a;
+      --green-soft: #e7f6ee;
+      --orange: #d97706;
+      --orange-soft: #fff4dc;
+      --red: #d64545;
+      --red-soft: #fdecea;
+      --ink: #111827;
+      --shadow: 0 14px 36px rgba(23, 32, 51, 0.08);
+      --radius: 8px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.55;
+    }
+    .page {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 36px 20px 48px;
+    }
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: end;
+      margin-bottom: 22px;
+    }
+    h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.2; }
+    .subtitle { margin: 0; max-width: 760px; color: var(--muted); font-size: 15px; }
+    .badge {
+      display: inline-flex; align-items: center; min-height: 34px;
+      padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px;
+      background: #fff; color: var(--muted); font-size: 13px; white-space: nowrap;
+    }
+    .notice {
+      margin: 0 0 18px; padding: 12px 14px;
+      border: 1px solid #f0cf9b; border-left: 4px solid var(--orange);
+      border-radius: var(--radius); background: #fff9ed; color: #69440d; font-size: 14px;
+    }
+    .grid { display: grid; gap: 14px; }
+    .cards { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 18px; }
+    .card, .section {
+      border: 1px solid var(--line); border-radius: var(--radius);
+      background: var(--panel); box-shadow: var(--shadow);
+    }
+    .card { padding: 16px; }
+    .label { margin: 0 0 6px; color: var(--muted); font-size: 13px; }
+    .value { margin: 0; color: var(--ink); font-size: 27px; font-weight: 750; line-height: 1.16; }
+    .value small { font-size: 13px; color: var(--muted); font-weight: 500; }
+    .section { margin-top: 16px; overflow: hidden; }
+    .section-head {
+      display: flex; justify-content: space-between; gap: 14px; align-items: center;
+      padding: 16px 18px; border-bottom: 1px solid var(--line);
+    }
+    h2 { margin: 0; font-size: 18px; }
+    .section-note { margin: 0; color: var(--muted); font-size: 13px; text-align: right; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 11px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { background: #f2f5fa; color: #344054; font-weight: 700; text-align: center; white-space: nowrap; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    td.center { text-align: center; }
+    .yield-pill {
+      display: inline-flex; justify-content: center; min-width: 58px;
+      padding: 2px 7px; border-radius: 999px; font-weight: 750; line-height: 1.35;
+    }
+    .yield-high { background: var(--green-soft); color: var(--green); }
+    .yield-medium { background: var(--orange-soft); color: var(--orange); }
+    .yield-low { background: var(--blue-soft); color: var(--blue); }
+    .yield-red { background: var(--red-soft); color: var(--red); }
+    .reaction-pill { display: inline-flex; justify-content: center; min-width: 58px; padding: 2px 7px; border-radius: 999px; font-weight: 750; line-height: 1.35; }
+    .reaction-pill.negative { background: #fff0f0; color: #c92a2a; }
+    .reaction-pill.positive { background: #e8f8f1; color: #087f5b; }
+    tbody tr:last-child td { border-bottom: 0; }
+    .table-scroll { overflow-x: auto; }
+    .notes { display: grid; gap: 10px; padding: 16px 18px 18px; color: var(--muted); font-size: 13px; }
+    .notes p { margin: 0; }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .heat-cell {
+      text-align: center; font-variant-numeric: tabular-nums; font-weight: 600;
+      padding: 10px 8px; border-radius: 4px; min-width: 64px;
+    }
+    .chart-wrap { padding: 18px; }
+    .chart-wrap svg { width: 100%; height: auto; }
+    .chart-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; color: var(--muted); font-size: 13px; }
+    .chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .chart-legend .dot { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
+    @media (max-width: 920px) {
+      header { grid-template-columns: 1fr; }
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .section-note { text-align: left; }
+    }
+    @media (max-width: 640px) {
+      .page { padding: 24px 12px 36px; }
+      h1 { font-size: 24px; }
+      .cards { grid-template-columns: 1fr; }
+      .section-head { align-items: flex-start; flex-direction: column; }
+      .table-scroll table { min-width: 800px; }
+    }
+    .nav-back {
+      display: flex; align-items: center; gap: 6px;
+      padding: 12px 20px; background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 8px rgba(20,32,51,0.04);
+    }
+    .nav-back a {
+      color: var(--blue); text-decoration: none; font-size: 14px; font-weight: 500;
+    }
+    .nav-back a:hover { text-decoration: underline; }
+    .nav-back .arrow { font-size: 18px; }
+  </style>
+</head>
+<body>
+  <nav class="nav-back"><a href="index.html"><span class="arrow">←</span> 返回首页</a></nav>
+  <main class="page">
+    <header>
+      <div>
+        <h1>华晨中国预期分红与股息率矩阵</h1>
+        <p class="subtitle">
+          以华晨中国应占华晨宝马利润 ≈26亿人民币为基准，模拟不同分红比例与股价下的每股分红、税前股息率及港股通税后股息率。
+        </p>
+      </div>
+      <div class="badge">基准利润：26亿 RMB</div>
+    </header>
+
+    <p class="notice">
+      港股通投资者需缴纳 20% 红利税；香港本地投资者免红利税。华晨中国（1114.HK）为红筹股，港股通税率 20%，无公司层面代扣。
+    </p>
+
+    <section class="grid cards" aria-label="关键参数">
+      <article class="card">
+        <p class="label">基准利润（应占华晨宝马）</p>
+        <p class="value">26 <small>亿 RMB</small></p>
+      </article>
+      <article class="card">
+        <p class="label">华晨中国总股数</p>
+        <p class="value">50.45 <small>亿股</small></p>
+      </article>
+      <article class="card">
+        <p class="label">人民币/港币汇率</p>
+        <p class="value">1.15</p>
+      </article>
+      <article class="card">
+        <p class="label">港股通红利税</p>
+        <p class="value">20<small>%</small></p>
+      </article>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>每股分红（HK$）</h2>
+        <p class="section-note">分红比例 × 26亿 × 汇率 ÷ 总股数</p>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>分红比例</th>
+              <th>全分 (100%)</th>
+              <th>70%分</th>
+              <th>50%分</th>
+            </tr>
+          </thead>
+          <tbody id="dpsRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>税前股息率矩阵</h2>
+        <p class="section-note">每股分红 ÷ 股价；色块越绿股息率越高</p>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>股价 (HK$)</th>
+              <th>全分 (100%)</th>
+              <th>70%分</th>
+              <th>50%分</th>
+            </tr>
+          </thead>
+          <tbody id="preTaxRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>综合对照表</h2>
+        <p class="section-note">按分红比例分组，每股分红、税前股息率、税后股息率并排</p>
+      </div>
+      <div class="table-scroll">
+        <table style="min-width: 640px;">
+          <thead>
+            <tr>
+              <th>分红比例</th>
+              <th>股价</th>
+              <th class="num">每股分红<br>HK$</th>
+              <th class="num">税前股息率</th>
+              <th class="num">港股通税后<br>股息率</th>
+            </tr>
+          </thead>
+          <tbody id="fullRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>股息率可视化</h2>
+        <p class="section-note">每组为同一分红比例下不同股价的税前/税后股息率</p>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-legend">
+          <span><i class="dot" style="background:#2563eb;"></i>税前股息率</span>
+          <span><i class="dot" style="background:#13966a;"></i>港股通税后股息率</span>
+        </div>
+        <div id="yieldChart"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>历史派息</h2>
+        <p class="section-note">股价为 1114.HK 未复权收盘价；成交量放大倍数对比公告日前20个交易日均量；股息率为税前口径</p>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>公告日</th>
+              <th>类型</th>
+              <th>分红性质</th>
+              <th class="num">每股股息<br>HK$</th>
+              <th class="num">公告日收盘<br>HK$</th>
+              <th class="num">公告前<br>税前股息率</th>
+              <th class="num">公告后首日<br>税前股息率</th>
+              <th class="num">公告后首日涨幅</th>
+              <th class="num">公告后5日涨幅</th>
+              <th class="num">成交量<br>放大倍数</th>
+            </tr>
+          </thead>
+          <tbody id="shareholderRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>读数结论</h2>
+      </div>
+      <div class="notes">
+        <p>
+          1. 华晨中国应占华晨宝马利润约 26 亿人民币，这是 2025 年度 25% 少数股权口径下的应占利润（25.97 亿取整）。
+        </p>
+        <p>
+          2. 如果全分（100%），在股价 HK$3.0 时税前股息率约 19.8%，港股通税后约 15.8%；股价跌至 HK$2.0 时税前约 29.7%，税后约 23.7%。即使只分 50%，HK$2.0 时税前也有 9.9%，税后 7.9%。
+        </p>
+        <p>
+          3. 但 2022-2024 年实际现金分红率（收到华晨宝马分红 / 应占利润）远超 100%，说明华晨宝马不仅分当期利润、也在释放历史留存。若这一趋势延续，26亿只是底线，实际分红可能更高。
+        </p>
+        <p>
+          4. 港股通 20% 红利税是硬成本。在 HK$2.0-3.0 区间、全分场景下，税后股息率 16-24%，仍远高于多数港股通标的。但需注意华晨中国分红节奏不规律，大额特别息与常规中期息交替出现，年度股息率波动较大。
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>口径与假设</h2>
+      </div>
+      <div class="notes">
+        <p>
+          基准利润取华晨中国 2025 年应占华晨宝马利润 25.97 亿（≈26 亿），25% 少数股权口径。
+          总股数取华晨中国（1114.HK）已发行股本约 5,045,000,000 股（50.45 亿股）。
+          汇率取 1 RMB ≈ 1.15 HKD。
+          港股通红利税取 20%（红筹股，无公司层面代扣，全额由券商代扣代缴）。
+          香港本地投资者红利税为 0%。
+          逐笔派息公告来自华晨中国官网 2023-2025 年 Cash Dividend Announcement Form；历史收盘价与成交量来自 Yahoo Finance 日线行情接口。
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const PROFIT_RMB = 26;
+    const TOTAL_SHARES = 5045000000;
+    const EXCHANGE_RATE = 1.15;
+    const TAX_RATE_STOCK_CONNECT = 0.20;
+    const PAYOUT_RATES = [1.0, 0.7, 0.5];
+    const PAYOUT_LABELS = ["全分 (100%)", "70%分", "50%分"];
+    const PRICES = [3.0, 2.8, 2.6, 2.4, 2.2, 2.0];
+
+    const dps = (rate) => PROFIT_RMB * 1e8 * rate * EXCHANGE_RATE / TOTAL_SHARES;
+    const preTaxYield = (rate, price) => dps(rate) / price * 100;
+    const afterTaxYield = (rate, price) => dps(rate) * (1 - TAX_RATE_STOCK_CONNECT) / price * 100;
+
+    const pct = (num, d = 1) => `${num.toFixed(d)}%`;
+    const hkd = (num, d = 2) => `HK$${num.toFixed(d)}`;
+
+    function yieldClass(val) {
+      if (val >= 20) return "yield-red";
+      if (val >= 15) return "yield-high";
+      if (val >= 10) return "yield-medium";
+      return "yield-low";
+    }
+
+    document.querySelector("#dpsRows").innerHTML = `<tr>
+      <td style="font-weight:600;text-align:center;">每股分红</td>
+      ${PAYOUT_RATES.map(r => `<td class="center" style="font-weight:600;">${hkd(dps(r), 3)}</td>`).join("")}
+    </tr>
+    <tr>
+      <td style="color:var(--muted);text-align:center;">对应总额 (亿 HKD)</td>
+      ${PAYOUT_RATES.map(r => `<td class="center" style="color:var(--muted);">${(PROFIT_RMB * r * EXCHANGE_RATE).toFixed(1)}</td>`).join("")}
+    </tr>
+    <tr>
+      <td style="color:var(--muted);text-align:center;">对应总额 (亿 RMB)</td>
+      ${PAYOUT_RATES.map(r => `<td class="center" style="color:var(--muted);">${(PROFIT_RMB * r).toFixed(1)}</td>`).join("")}
+    </tr>`;
+
+    document.querySelector("#preTaxRows").innerHTML = PRICES.map(price => {
+      return `<tr>
+        <td style="font-weight:600;">HK$${price.toFixed(1)}</td>
+        ${PAYOUT_RATES.map(r => {
+          const y = preTaxYield(r, price);
+          return `<td class="heat-cell ${yieldClass(y)}">${pct(y)}</td>`;
+        }).join("")}
+      </tr>`;
+    }).join("");
+
+    document.querySelector("#fullRows").innerHTML = PAYOUT_RATES.flatMap((r, i) => {
+      return PRICES.map(price => {
+        const d = dps(r);
+        const pre = preTaxYield(r, price);
+        const after = afterTaxYield(r, price);
+        return `<tr>
+          <td>${PAYOUT_LABELS[i]}</td>
+          <td style="font-weight:600;">HK$${price.toFixed(1)}</td>
+          <td class="num">${hkd(d, 3)}</td>
+          <td class="num"><span class="yield-pill ${yieldClass(pre)}">${pct(pre)}</span></td>
+          <td class="num"><span class="yield-pill ${yieldClass(after)}">${pct(after)}</span></td>
+        </tr>`;
+      });
+    }).join("");
+
+    (function renderChart() {
+      const maxVal = 35;
+      const barW = 14;
+      const barGap = 3;
+      const pairGap = 6;
+      const priceGap = 10;
+      const groupGap = 30;
+      const chartH = 280;
+      const topPad = 10;
+      const bottomPad = 40;
+      const leftPad = 40;
+      const baseY = chartH - bottomPad;
+
+      const colors = { pre: "#2563eb", after: "#13966a" };
+
+      let svg = [];
+      let xPos = leftPad;
+
+      PAYOUT_LABELS.forEach((label, i) => {
+        const r = PAYOUT_RATES[i];
+        const groupX = xPos;
+
+        svg.push(`<text x="${groupX}" y="${topPad}" style="font-size:14px;font-weight:700;fill:#344054;">${label}</text>`);
+
+        PRICES.forEach((price, j) => {
+          const pre = preTaxYield(r, price);
+          const after = afterTaxYield(r, price);
+          const preH = (pre / maxVal) * (chartH - topPad - bottomPad);
+          const afterH = (after / maxVal) * (chartH - topPad - bottomPad);
+
+          const x1 = xPos + j * (pairGap + 2 * barW + priceGap);
+          const x2 = x1 + barW + pairGap;
+
+          svg.push(`<rect x="${x1}" y="${baseY - preH}" width="${barW}" height="${preH}" rx="2" fill="${colors.pre}"/>`);
+          svg.push(`<rect x="${x2}" y="${baseY - afterH}" width="${barW}" height="${afterH}" rx="2" fill="${colors.after}"/>`);
+
+          if (pre >= 5) {
+            svg.push(`<text x="${x1 + barW / 2}" y="${baseY - preH - 6}" style="font-size:11px;fill:${colors.pre};text-anchor:middle;">${pre.toFixed(1)}%</text>`);
+          }
+          if (after >= 5) {
+            svg.push(`<text x="${x2 + barW / 2}" y="${baseY - afterH - 6}" style="font-size:11px;fill=${colors.after};text-anchor:middle;">${after.toFixed(1)}%</text>`);
+          }
+
+          svg.push(`<text x="${x1 + barW + pairGap / 2}" y="${baseY + 14}" style="font-size:11px;fill:#667085;text-anchor:middle;">HK$${price.toFixed(1)}</text>`);
+        });
+
+        xPos = groupX + PRICES.length * (pairGap + 2 * barW + priceGap) - priceGap + groupGap;
+      });
+
+      const svgW = xPos - groupGap + 20;
+      const gridLines = [];
+      for (let v = 0; v <= maxVal; v += 5) {
+        const y = baseY - (v / maxVal) * (chartH - topPad - bottomPad);
+        gridLines.push(`<line x1="${leftPad}" y1="${y}" x2="${svgW}" y2="${y}" stroke="#d9dee8" stroke-width="1"/>`);
+        gridLines.push(`<text x="${leftPad - 4}" y="${y + 4}" style="font-size:11px;fill:#667085;text-anchor:end;">${v}%</text>`);
+      }
+      gridLines.push(`<line x1="${leftPad}" y1="${baseY}" x2="${svgW}" y2="${baseY}" stroke="#344054" stroke-width="1.5"/>`);
+
+      document.querySelector("#yieldChart").innerHTML = `<svg viewBox="0 0 ${svgW} ${chartH}" preserveAspectRatio="xMidYMid meet">${gridLines.join("")}${svg.join("")}</svg>`;
+    })();
+
+    const shareholderDividends = [
+      {
+        announcementDate: "2023-01-13",
+        type: "特别股息",
+        nature: "出售华晨宝马25%股权款回流",
+        dividend: 0.96,
+        prevClose: 4.76,
+        close: 4.89,
+        nextClose: 4.49,
+        fiveDayReturn: -10.84,
+        volumeMultiple: 3.70
+      },
+      {
+        announcementDate: "2023-07-18",
+        type: "特别股息",
+        nature: "出售华晨宝马25%股权款回流",
+        dividend: 0.96,
+        prevClose: 3.99,
+        close: 4.02,
+        nextClose: 3.95,
+        fiveDayReturn: -1.00,
+        volumeMultiple: 1.20
+      },
+      {
+        announcementDate: "2024-04-15",
+        type: "特别股息",
+        nature: "出售款及华晨宝马现金分红释放",
+        dividend: 1.50,
+        prevClose: 7.35,
+        close: 7.35,
+        nextClose: 7.14,
+        fiveDayReturn: -1.36,
+        volumeMultiple: 1.44
+      },
+      {
+        announcementDate: "2024-06-14",
+        type: "特别股息",
+        nature: "大额特别息，历史留存现金释放",
+        dividend: 4.30,
+        prevClose: 6.97,
+        close: 7.13,
+        nextClose: 8.47,
+        fiveDayReturn: 17.25,
+        volumeMultiple: 8.24
+      },
+      {
+        announcementDate: "2025-03-03",
+        type: "特别股息",
+        nature: "特别息，但预期兑现色彩较强",
+        dividend: 1.00,
+        prevClose: 4.15,
+        close: 4.24,
+        nextClose: 3.84,
+        fiveDayReturn: -9.43,
+        volumeMultiple: 4.88
+      },
+      {
+        announcementDate: "2025-08-22",
+        type: "中期股息",
+        nature: "常规化中期分红，现金流分配",
+        dividend: 0.80,
+        prevClose: 3.61,
+        close: 3.58,
+        nextClose: 3.95,
+        fiveDayReturn: 11.17,
+        volumeMultiple: 7.99
+      }
+    ];
+
+    document.querySelector("#shareholderRows").innerHTML = shareholderDividends.map(row => {
+      const yieldBefore = row.dividend / row.prevClose * 100;
+      const yieldAfter = row.dividend / row.nextClose * 100;
+      const nextDayReaction = (row.nextClose / row.close - 1) * 100;
+      const reactionClass = nextDayReaction < 0 ? "negative" : "positive";
+      return `<tr>
+        <td>${row.announcementDate}</td>
+        <td>${row.type}</td>
+        <td>${row.nature}</td>
+        <td class="num">${row.dividend.toFixed(2)}</td>
+        <td class="num">${row.close.toFixed(2)}</td>
+        <td class="num">${pct(yieldBefore)}</td>
+        <td class="num"><span class="yield-pill ${yieldClass(yieldAfter)}">${pct(yieldAfter)}</span></td>
+        <td class="num"><span class="reaction-pill ${reactionClass}">${pct(nextDayReaction)}</span></td>
+        <td class="num">${pct(row.fiveDayReturn)}</td>
+        <td class="num">${row.volumeMultiple.toFixed(2)}x</td>
+      </tr>`;
+    }).join("");
+  </script>
+</body>
+</html>
